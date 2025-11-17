@@ -78,6 +78,7 @@ function App() {
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.5, ease: [0.25, 0.1, 0.25, 1] }}
           >
+            <div className="h-6"></div>
             <Hero theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.personal} />
             <CaseStudies 
               theme={theme} 
@@ -88,7 +89,7 @@ function App() {
             <About theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.about} />
             <DesignProcess theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.designProcess} />
             <Skills theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.skills} />
-            <Awards theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData} />
+      
             <Contact theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.personal} />
           </motion.div>
         ) : (
