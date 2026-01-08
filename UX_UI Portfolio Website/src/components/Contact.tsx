@@ -119,7 +119,7 @@ export default function Contact({
 				>
 					<div className="flex items-center gap-8 lg:gap-12">
 						{/* Content */}
-						<div className=" sm:block flex-shrink-0">
+						<div className=" hidden sm:block flex-shrink-0">
 							<AnimatedAvatar theme={theme} />
 						</div>
 						<div className="flex-1 space-y-4">
