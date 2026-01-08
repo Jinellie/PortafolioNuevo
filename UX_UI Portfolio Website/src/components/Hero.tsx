@@ -181,7 +181,7 @@ export default function Hero({ theme, prefersReducedMotion, data }: HeroProps) {
             theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
           }`}
         >
-          <span className="tracking-wider uppercase" style={{ fontSize: '0.75rem' }}>Scroll</span>
+         
           <div className={`w-px h-12 ${
             theme === 'dark' ? 'bg-neutral-800' : 'bg-neutral-300'
           }`} />

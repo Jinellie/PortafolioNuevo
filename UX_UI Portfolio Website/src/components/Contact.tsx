@@ -1,7 +1,14 @@
 import { useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
 import { Theme } from "../App";
-import { Mail, Linkedin, Github, Send } from "lucide-react";
+import {
+	Mail,
+	Linkedin,
+	Github,
+	Send,
+	CheckCircle,
+	AlertCircle,
+} from "lucide-react";
 import AnimatedAvatar from "./AnimatedAvatar";
 
 interface ContactProps {
@@ -15,6 +22,8 @@ interface ContactProps {
 	};
 }
 
+type FormStatus = "idle" | "submitting" | "success" | "error";
+
 export default function Contact({
 	theme,
 	prefersReducedMotion,
@@ -27,10 +36,45 @@ export default function Contact({
 		email: "",
 		message: "",
 	});
+	const [formStatus, setFormStatus] = useState<FormStatus>("idle");
+	const [statusMessage, setStatusMessage] = useState("");
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		console.log("Form submitted:", formData);
+		setFormStatus("submitting");
+
+		try {
+			// Create mailto link as fallback
+			const subject = encodeURIComponent(`Portfolio Contact: ${formData.name}`);
+			const body = encodeURIComponent(
+				`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+			);
+			const mailtoLink = `mailto:${data.email}?subject=${subject}&body=${body}`;
+
+			// Open default email client
+			window.location.href = mailtoLink;
+
+			// Show success message
+			setFormStatus("success");
+			setStatusMessage("Opening your email client...");
+
+			// Reset form after delay
+			setTimeout(() => {
+				setFormData({ name: "", email: "", message: "" });
+				setFormStatus("idle");
+				setStatusMessage("");
+			}, 3000);
+		} catch (error) {
+			setFormStatus("error");
+			setStatusMessage(
+				"Something went wrong. Please try again or email me directly."
+			);
+
+			setTimeout(() => {
+				setFormStatus("idle");
+				setStatusMessage("");
+			}, 5000);
+		}
 	};
 
 	const handleChange = (
@@ -65,29 +109,38 @@ export default function Contact({
 
 	return (
 		<section id="contact" ref={ref} className="relative py-24 px-6 lg:px-8">
-			{/* ⭐ Your animated avatar here */}
-
 			<div className="max-w-7xl mx-auto">
+				{/* Polished Header Section */}
 				<motion.div
 					initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
 					animate={isInView ? { opacity: 1, y: 0 } : {}}
 					transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
 					className="mb-16"
 				>
-					{/* Wrap title in a flex container */}
-          <div className="flex items-center gap-6 mb-6">
-            
-						<div className="flex-1">
+					<div className="flex items-center gap-8 lg:gap-12">
+						{/* Content */}
+						<div className=" sm:block flex-shrink-0">
+							<AnimatedAvatar theme={theme} />
+						</div>
+						<div className="flex-1 space-y-4">
 							<p
-								className={`mb-4 tracking-wider uppercase ${
+								className={`text-sm font-medium tracking-wider uppercase ${
 									theme === "dark" ? "text-neutral-500" : "text-neutral-500"
 								}`}
 							>
 								Get In Touch
 							</p>
-							<h2 className="tracking-tight">Let's Work Together</h2>
+
+							<h2
+								className={`text-4xl lg:text-5xl font-bold tracking-tight ${
+									theme === "dark" ? "text-neutral-100" : "text-neutral-900"
+								}`}
+							>
+								Let's Work Together
+							</h2>
+
 							<p
-								className={`max-w-2xl ${
+								className={`text-lg leading-relaxed max-w-2xl ${
 									theme === "dark" ? "text-neutral-400" : "text-neutral-600"
 								}`}
 							>
@@ -96,12 +149,7 @@ export default function Contact({
 								hi, feel free to reach out.
 							</p>
 						</div>
-
-						{/* Avatar on the right */}
-						<AnimatedAvatar theme={theme} />
 					</div>
-
-					
 				</motion.div>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
@@ -118,7 +166,7 @@ export default function Contact({
 							<div>
 								<label
 									htmlFor="name"
-									className={`block mb-2 ${
+									className={`block mb-2 text-sm font-medium ${
 										theme === "dark" ? "text-neutral-300" : "text-neutral-700"
 									}`}
 								>
@@ -131,10 +179,11 @@ export default function Contact({
 									value={formData.name}
 									onChange={handleChange}
 									required
+									disabled={formStatus === "submitting"}
 									className={`w-full px-4 py-3 rounded-lg transition-all duration-300 ${
 										theme === "dark"
-											? "bg-neutral-900 border border-neutral-800 text-neutral-100 focus:border-neutral-600 focus:outline-none"
-											: "bg-neutral-100 border border-neutral-200 text-neutral-900 focus:border-neutral-400 focus:outline-none"
+											? "bg-neutral-900 border border-neutral-800 text-neutral-100 focus:border-neutral-600 focus:outline-none disabled:opacity-50"
+											: "bg-neutral-100 border border-neutral-200 text-neutral-900 focus:border-neutral-400 focus:outline-none disabled:opacity-50"
 									}`}
 								/>
 							</div>
@@ -142,7 +191,7 @@ export default function Contact({
 							<div>
 								<label
 									htmlFor="email"
-									className={`block mb-2 ${
+									className={`block mb-2 text-sm font-medium ${
 										theme === "dark" ? "text-neutral-300" : "text-neutral-700"
 									}`}
 								>
@@ -155,10 +204,11 @@ export default function Contact({
 									value={formData.email}
 									onChange={handleChange}
 									required
+									disabled={formStatus === "submitting"}
 									className={`w-full px-4 py-3 rounded-lg transition-all duration-300 ${
 										theme === "dark"
-											? "bg-neutral-900 border border-neutral-800 text-neutral-100 focus:border-neutral-600 focus:outline-none"
-											: "bg-neutral-100 border border-neutral-200 text-neutral-900 focus:border-neutral-400 focus:outline-none"
+											? "bg-neutral-900 border border-neutral-800 text-neutral-100 focus:border-neutral-600 focus:outline-none disabled:opacity-50"
+											: "bg-neutral-100 border border-neutral-200 text-neutral-900 focus:border-neutral-400 focus:outline-none disabled:opacity-50"
 									}`}
 								/>
 							</div>
@@ -166,7 +216,7 @@ export default function Contact({
 							<div>
 								<label
 									htmlFor="message"
-									className={`block mb-2 ${
+									className={`block mb-2 text-sm font-medium ${
 										theme === "dark" ? "text-neutral-300" : "text-neutral-700"
 									}`}
 								>
@@ -179,26 +229,61 @@ export default function Contact({
 									onChange={handleChange}
 									required
 									rows={6}
+									disabled={formStatus === "submitting"}
 									className={`w-full px-4 py-3 rounded-lg transition-all duration-300 resize-none ${
 										theme === "dark"
-											? "bg-neutral-900 border border-neutral-800 text-neutral-100 focus:border-neutral-600 focus:outline-none"
-											: "bg-neutral-100 border border-neutral-200 text-neutral-900 focus:border-neutral-400 focus:outline-none"
+											? "bg-neutral-900 border border-neutral-800 text-neutral-100 focus:border-neutral-600 focus:outline-none disabled:opacity-50"
+											: "bg-neutral-100 border border-neutral-200 text-neutral-900 focus:border-neutral-400 focus:outline-none disabled:opacity-50"
 									}`}
 								/>
 							</div>
 
+							{/* Status Message */}
+							{statusMessage && (
+								<motion.div
+									initial={{ opacity: 0, y: -10 }}
+									animate={{ opacity: 1, y: 0 }}
+									className={`flex items-center gap-2 p-4 rounded-lg ${
+										formStatus === "success"
+											? theme === "dark"
+												? "bg-green-900/30 text-green-400"
+												: "bg-green-100 text-green-700"
+											: theme === "dark"
+											? "bg-red-900/30 text-red-400"
+											: "bg-red-100 text-red-700"
+									}`}
+								>
+									{formStatus === "success" ? (
+										<CheckCircle className="w-5 h-5" />
+									) : (
+										<AlertCircle className="w-5 h-5" />
+									)}
+									<span className="text-sm">{statusMessage}</span>
+								</motion.div>
+							)}
+
 							<motion.button
 								type="submit"
-								className={`w-full flex items-center justify-center gap-3 px-8 py-4 rounded-full transition-all duration-300 ${
+								disabled={formStatus === "submitting"}
+								className={`w-full flex items-center justify-center gap-3 px-8 py-4 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
 									theme === "dark"
-										? "bg-neutral-50 text-neutral-950 hover:bg-neutral-200"
-										: "bg-neutral-950 text-neutral-50 hover:bg-neutral-800"
+										? "bg-neutral-50 text-neutral-950 hover:bg-neutral-200 disabled:hover:bg-neutral-50"
+										: "bg-neutral-950 text-neutral-50 hover:bg-neutral-800 disabled:hover:bg-neutral-950"
 								}`}
-								whileHover={{ scale: prefersReducedMotion ? 1 : 1.02 }}
-								whileTap={{ scale: 0.98 }}
+								whileHover={{
+									scale:
+										prefersReducedMotion || formStatus === "submitting"
+											? 1
+											: 1.02,
+								}}
+								whileTap={{ scale: formStatus === "submitting" ? 1 : 0.98 }}
 							>
-								Send Message
-								<Send className="w-4 h-4" />
+								{formStatus === "submitting" ? "Sending..." : "Send Message"}
+								<Send
+									className={`w-4 h-4 ${
+										formStatus === "submitting" ? "animate-pulse" : ""
+									}`}
+								/>
 							</motion.button>
 						</form>
 					</motion.div>
@@ -214,7 +299,13 @@ export default function Contact({
 						className="space-y-8"
 					>
 						<div>
-							<h3 className="mb-6 tracking-tight">Connect With Me</h3>
+							<h3
+								className={`mb-6 text-2xl font-bold tracking-tight ${
+									theme === "dark" ? "text-neutral-100" : "text-neutral-900"
+								}`}
+							>
+								Connect With Me
+							</h3>
 							<div className="space-y-4">
 								{socialLinks.map((link, index) => (
 									<motion.a
@@ -241,7 +332,7 @@ export default function Contact({
 										</div>
 										<div>
 											<p
-												className={`mb-1 ${
+												className={`text-sm mb-1 ${
 													theme === "dark"
 														? "text-neutral-400"
 														: "text-neutral-600"
@@ -250,11 +341,11 @@ export default function Contact({
 												{link.label}
 											</p>
 											<p
-												className={
+												className={`font-medium ${
 													theme === "dark"
 														? "text-neutral-200"
 														: "text-neutral-800"
-												}
+												}`}
 											>
 												{link.text}
 											</p>
@@ -269,22 +360,32 @@ export default function Contact({
 								theme === "dark" ? "bg-neutral-900" : "bg-neutral-100"
 							}`}
 						>
-							<h4 className="mb-4 tracking-tight">Current Availability</h4>
+							<h4
+								className={`mb-4 text-xl font-bold tracking-tight ${
+									theme === "dark" ? "text-neutral-100" : "text-neutral-900"
+								}`}
+							>
+								Current Availability
+							</h4>
 							<p
-								className={
+								className={`leading-relaxed ${
 									theme === "dark" ? "text-neutral-400" : "text-neutral-600"
-								}
+								}`}
 							>
 								I'm currently available for freelance projects and full-time
 								opportunities. Let's discuss how we can work together to create
 								something exceptional.
 							</p>
 							<div className="mt-6 flex items-center gap-3">
-								<div className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
+								<CheckCircle
+									className={`w-5 h-5 ${
+										theme === "dark" ? "text-green-400" : "text-green-600"
+									}`}
+								/>
 								<span
-									className={
+									className={`font-medium ${
 										theme === "dark" ? "text-neutral-300" : "text-neutral-700"
-									}
+									}`}
 								>
 									{data.availability}
 								</span>
@@ -305,7 +406,7 @@ export default function Contact({
 					}`}
 				>
 					<p>
-						© 2024 Jinelle Flores. Designed & built with precision and care.
+						© 2026 Jinelle Flores. Scrolled this far? Let's connect!
 					</p>
 				</motion.div>
 			</div>

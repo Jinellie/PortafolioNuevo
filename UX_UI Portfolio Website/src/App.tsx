@@ -58,60 +58,100 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const setCurrentCaseStudyId = (id: string) => {
+    setSelectedCaseStudy(id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   return (
-    <div className={`min-h-screen transition-colors duration-700 ease-out ${
-      theme === 'dark' ? 'bg-neutral-950 text-neutral-50' : 'bg-neutral-50 text-neutral-950'
-    }`}>
-      <Navigation 
-        theme={theme} 
-        toggleTheme={toggleTheme}
-        currentPage={currentPage}
-        onBackToHome={handleBackToHome}
-      />
-      
-      <AnimatePresence mode="wait">
-        {currentPage === 'home' ? (
-          <motion.div
-            key="home"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            <div className="h-6"></div>
-            <Hero theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.personal} />
-            <CaseStudies 
-              theme={theme} 
-              onCaseStudyClick={handleCaseStudyClick}
-              prefersReducedMotion={prefersReducedMotion}
-              data={contentData.caseStudies}
-            />
-            <About theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.about} />
-            <DesignProcess theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.designProcess} />
-            <Skills theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.skills} />
-      
-            <Contact theme={theme} prefersReducedMotion={prefersReducedMotion} data={contentData.personal} />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="case-study"
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            <CaseStudyPage 
-              caseStudyId={selectedCaseStudy || ''}
-              theme={theme}
-              onBack={handleBackToHome}
-              prefersReducedMotion={prefersReducedMotion}
-              data={contentData.caseStudies}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+		<div
+			className={`min-h-screen transition-colors duration-700 ease-out ${
+				theme === "dark"
+					? "bg-neutral-950 text-neutral-50"
+					: "bg-neutral-50 text-neutral-950"
+			}`}
+		>
+			<Navigation
+				theme={theme}
+				toggleTheme={toggleTheme}
+				currentPage={currentPage}
+				onBackToHome={handleBackToHome}
+			/>
+
+			<AnimatePresence mode="wait">
+				{currentPage === "home" ? (
+					<motion.div
+						key="home"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0, scale: 0.98 }}
+						transition={{
+							duration: prefersReducedMotion ? 0 : 0.5,
+							ease: [0.25, 0.1, 0.25, 1],
+						}}
+					>
+						<div className="h-6"></div>
+						<Hero
+							theme={theme}
+							prefersReducedMotion={prefersReducedMotion}
+							data={contentData.personal}
+						/>
+						<CaseStudies
+							theme={theme}
+							onCaseStudyClick={handleCaseStudyClick}
+							prefersReducedMotion={prefersReducedMotion}
+							data={contentData.caseStudies}
+						/>
+						<About
+							theme={theme}
+							prefersReducedMotion={prefersReducedMotion}
+							data={contentData.about}
+						/>
+						<DesignProcess
+							theme={theme}
+							prefersReducedMotion={prefersReducedMotion}
+							data={contentData.designProcess}
+						/>
+						<Skills
+							theme={theme}
+							prefersReducedMotion={prefersReducedMotion}
+							data={contentData.skills}
+						/>
+
+						<Contact
+							theme={theme}
+							prefersReducedMotion={prefersReducedMotion}
+							data={contentData.personal}
+						/>
+					</motion.div>
+				) : (
+					<motion.div
+						key="case-study"
+						initial={{ opacity: 0, scale: 1.02 }}
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 0.98 }}
+						transition={{
+							duration: prefersReducedMotion ? 0 : 0.6,
+							ease: [0.25, 0.1, 0.25, 1],
+						}}
+					>
+						<CaseStudyPage
+							caseStudyId={selectedCaseStudy || ""}
+							theme={theme}
+							onBack={handleBackToHome}
+							onNextProject={(nextId) => {
+								// Handle navigation to next project
+								setCurrentCaseStudyId(nextId);
+								// or however you handle navigation in your app
+							}}
+							prefersReducedMotion={prefersReducedMotion}
+							data={contentData.caseStudies}
+						/>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</div>
+	);
 }
 
 export default App;

@@ -29,28 +29,11 @@ export default function CaseStudies({ theme, onCaseStudyClick, prefersReducedMot
           transition={{ duration: prefersReducedMotion ? 0 : 0.6 }}
           className="mb-20 text-center"
         >
-          <motion.div
-            className="inline-block mb-6"
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : {}}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.5, delay: 0.2 }}
-          >
-            <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-              theme === 'dark' ? 'bg-neutral-800' : 'bg-neutral-200'
-            }`}>
-              <div className={`w-8 h-8 rounded-full ${
-                theme === 'dark' ? 'bg-neutral-700' : 'bg-neutral-300'
-              }`} />
-            </div>
-          </motion.div>
           
-          <p className={`mb-4 tracking-wider uppercase ${
-            theme === 'dark' ? 'text-neutral-500' : 'text-neutral-500'
-          }`}>
-            Featured Projects
-          </p>
+          
+          
           <h2 className="tracking-tight mb-6" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)' }}>
-            Selected Work
+            Featured Work
           </h2>
           <p className={`max-w-2xl mx-auto ${
             theme === 'dark' ? 'text-neutral-400' : 'text-neutral-600'
