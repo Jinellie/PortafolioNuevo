@@ -86,9 +86,9 @@ function MagneticGrid({ theme, prefersReducedMotion }: { theme: Theme; prefersRe
     return () => window.removeEventListener('deviceorientation', handleOrientation);
   }, [dimensions, mouseX, mouseY]);
 
-  // Create grid of dots
-  const cols = 20;
-  const rows = 15;
+ // Create grid of dots - responsive to screen width
+  const cols = dimensions.width < 768 ? 12 : 20;
+  const rows = dimensions.width < 768 ? 10 : 15;
   const dots = [];
 
   for (let row = 0; row < rows; row++) {

@@ -119,9 +119,9 @@ export default function Contact({
 				>
 					<div className="flex items-center gap-8 lg:gap-12">
 						{/* Content */}
-						<div className=" hidden sm:block flex-shrink-0">
-							<AnimatedAvatar theme={theme} />
-						</div>
+						<div className="hidden sm:block flex-shrink-0">
+	<AnimatedAvatar theme={theme} />
+</div>
 						<div className="flex-1 space-y-4">
 							<p
 								className={`text-sm font-medium tracking-wider uppercase ${
