@@ -73,7 +73,7 @@ export function HeroCarousel({
 						<ImageWithFallback
 							src={slide.image}
 							alt={`Case study screen ${index + 1} of ${total}`}
-							className="max-h-full w-auto  object-contain"
+							className="w-full h-auto max-h-full object-contain" // Changed from h-full w-auto
 						/>
 					</div>
 

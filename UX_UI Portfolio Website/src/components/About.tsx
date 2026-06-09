@@ -21,10 +21,10 @@ interface AboutProps {
 const valueIcons = [Sparkles, Heart, Lightbulb];
 
 export default function About({ theme, prefersReducedMotion, data }: AboutProps) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+	const ref = useRef(null);
+	const isInView = useInView(ref, { once: true, margin: "-100px" });
 
-  return (
+	return (
 		<section
 			id="about"
 			ref={ref}
@@ -32,7 +32,7 @@ export default function About({ theme, prefersReducedMotion, data }: AboutProps)
 				theme === "dark" ? "bg-neutral-900" : "bg-neutral-100"
 			}`}
 		>
-			<div className="max-w-7xl mx-auto">
+			<div className="max-w-7xl mx-auto mb-8">
 				<div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
 					{/* Left Column - Image */}
 					<motion.div
@@ -42,14 +42,14 @@ export default function About({ theme, prefersReducedMotion, data }: AboutProps)
 						transition={{ duration: prefersReducedMotion ? 0 : 0.8 }}
 					>
 						<div
-							className={`aspect-[3/4] rounded-2xl overflow-hidden ${
+							className={`aspect-[1/4] rounded-2xl overflow-hidden ${
 								theme === "dark" ? "bg-neutral-800" : "bg-neutral-200"
 							}`}
 						>
 							<img
 								src={profileImage}
 								alt="Portrait of Jinelle Flores"
-								className="w-full h-full object-cover"
+								className="w-full h-auto object-cover"
 							/>
 						</div>
 					</motion.div>
@@ -81,48 +81,66 @@ export default function About({ theme, prefersReducedMotion, data }: AboutProps)
 									<p key={index}>{paragraph}</p>
 								))}
 							</div>
-
-							{/* Values */}
-							<div className="space-y-6">
-								{data.values.map((value, index) => (
-									<motion.div
-										key={index}
-										initial={{ opacity: 0, x: prefersReducedMotion ? 0 : 20 }}
-										animate={isInView ? { opacity: 1, x: 0 } : {}}
-										transition={{
-											duration: prefersReducedMotion ? 0 : 0.6,
-											delay: 0.4 + index * 0.1,
-										}}
-										className="flex gap-4"
-									>
-										<div
-											className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-												theme === "dark" ? "bg-neutral-800" : "bg-neutral-200"
-											}`}
-										>
-											{(() => {
-												const Icon = valueIcons[index];
-												return <Icon className="w-6 h-6" />;
-											})()}
-										</div>
-										<div>
-											<h3 className="mb-2 tracking-tight">{value.title}</h3>
-											<p
-												className={
-													theme === "dark"
-														? "text-neutral-400"
-														: "text-neutral-600"
-												}
-											>
-												{value.description}
-											</p>
-										</div>
-									</motion.div>
-								))}
-							</div>
 						</motion.div>
 					</div>
 				</div>
+				{/* Values - 3 Column Card Grid */}
+				<motion.div
+					initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+					animate={isInView ? { opacity: 1, y: 0 } : {}}
+					transition={{
+						duration: prefersReducedMotion ? 0 : 0.6,
+						delay: 0.5,
+					}}
+					className="pt-16"
+				>
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+						{data.values.map((value, index) => {
+							const Icon = valueIcons[index];
+							return (
+								<motion.div
+									key={index}
+									initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20 }}
+									animate={isInView ? { opacity: 1, y: 0 } : {}}
+									transition={{
+										duration: prefersReducedMotion ? 0 : 0.6,
+										delay: 0.6 + index * 0.1,
+									}}
+									className={`p-8 rounded-2xl flex flex-col items-center text-center transition-all duration-300 ${
+										theme === "dark"
+											? "bg-neutral-800 border border-neutral-700 hover:border-neutral-600"
+											: "bg-white border border-neutral-100 shadow-sm hover:shadow-xl"
+									}`}
+								>
+									{/* Icon Container with Subtle Accent */}
+									<div
+										className={`flex-shrink-0 w-20 h-20 rounded-full flex items-center justify-center mb-8 ${
+											theme === "dark" ? "bg-neutral-700" : "bg-neutral-100"
+										}`}
+									>
+										<Icon
+											className={`w-10 h-10 ${
+												theme === "dark" ? "text-indigo-400" : "text-indigo-600"
+											}`}
+										/>
+									</div>
+
+									{/* Card Content */}
+									<h3 className="mb-3 text-2xl tracking-tight font-bold">
+										{value.title}
+									</h3>
+									<p
+										className={`text-base/relaxed ${
+											theme === "dark" ? "text-neutral-400" : "text-neutral-600"
+										}`}
+									>
+										{value.description}
+									</p>
+								</motion.div>
+							);
+						})}
+					</div>
+				</motion.div>
 			</div>
 		</section>
 	);

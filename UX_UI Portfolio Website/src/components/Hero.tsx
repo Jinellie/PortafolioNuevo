@@ -291,7 +291,7 @@ function Hero({ theme, prefersReducedMotion, data }: HeroProps) {
 
   // Calculate when grid animation completes
   // Last dot delay: 300 * 0.003 = 0.9s, Duration: 0.6s = ~1.5s
-  const gridAnimationComplete = prefersReducedMotion ? 0 : 1.5;
+  const gridAnimationComplete = prefersReducedMotion ? 0 : 1;
   const heroContentDelay = gridAnimationComplete;
 
   return (
@@ -304,21 +304,7 @@ function Hero({ theme, prefersReducedMotion, data }: HeroProps) {
 
       <div className="max-w-7xl w-full relative z-10">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Role Label */}
-          <motion.div
-            initial={{ opacity: 0, y: prefersReducedMotion ? 0 : -20, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: heroContentDelay + 0.2 }}
-            className="mb-8"
-          >
-            <span className={`inline-block px-6 py-2 rounded-full border tracking-wider uppercase ${
-              theme === 'dark' 
-                ? 'border-neutral-700 text-neutral-400 bg-neutral-950' 
-                : 'border-neutral-300 text-neutral-600 bg-neutral-50'
-            }`} style={{ fontSize: '0.75rem' }}>
-              {data.role}
-            </span>
-          </motion.div>
+          
 
           {/* Main Name - Extra Large */}
           <motion.h1
@@ -367,26 +353,36 @@ function Hero({ theme, prefersReducedMotion, data }: HeroProps) {
 
           {/* CTA Button */}
           <motion.button
-            onClick={scrollToWork}
-            className={`group inline-flex items-center gap-4 px-12 py-5 rounded-full transition-all duration-300 ${
-              theme === 'dark'
-                ? 'bg-neutral-50 text-neutral-950 hover:bg-neutral-200 hover:shadow-2xl hover:shadow-neutral-400/20'
-                : 'bg-neutral-950 text-neutral-50 hover:bg-neutral-800 hover:shadow-2xl hover:shadow-neutral-950/20'
-            }`}
-            initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 20, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.8, delay: heroContentDelay + 1 }}
-            whileHover={{ scale: prefersReducedMotion ? 1 : 1.05 }}
-            whileTap={{ scale: 0.98 }}
-            style={{ fontSize: '1.125rem', fontWeight: 500 }}
-          >
+  onClick={scrollToWork}
+  className={`group inline-flex items-center gap-4 px-12 py-5 rounded-full transition-colors duration-300 ${
+    theme === 'dark'
+      ? 'bg-neutral-50 text-neutral-950 hover:bg-neutral-200 hover:shadow-2xl hover:shadow-neutral-400/20'
+      : 'bg-neutral-950 text-neutral-50 hover:bg-neutral-800 hover:shadow-2xl hover:shadow-neutral-950/20'
+  }`}
+  initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 15, filter: 'blur(8px)' }}
+  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+  transition={{ 
+    duration: prefersReducedMotion ? 0 : 1, // Slightly longer duration for a luxury feel
+    delay: heroContentDelay + 1,
+    ease: [0.16, 1, 0.3, 1] // Custom easeOutExpo curve for an incredibly smooth fade-in
+  }}
+  whileHover={prefersReducedMotion ? {} : { 
+    scale: 1.02, // Subtler scale is much more elegant than 1.05
+    transition: { type: "spring", stiffness: 400, damping: 30 } 
+  }}
+  whileTap={{ 
+    scale: 0.98,
+    transition: { type: "spring", stiffness: 500, damping: 15 }
+  }}
+  style={{ fontSize: '1.125rem', fontWeight: 500 }}
+>
             View Featured Work
             <motion.div
               animate={{ y: [0, 4, 0] }}
               transition={{ 
                 duration: prefersReducedMotion ? 0 : 1.5, 
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeOut"
               }}
             >
               <ArrowDown className="w-5 h-5" />
@@ -425,7 +421,7 @@ function Hero({ theme, prefersReducedMotion, data }: HeroProps) {
           transition={{ 
             duration: prefersReducedMotion ? 0 : 2, 
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeOut"
           }}
           className={`flex flex-col items-center gap-2 ${
             theme === 'dark' ? 'text-neutral-600' : 'text-neutral-400'
