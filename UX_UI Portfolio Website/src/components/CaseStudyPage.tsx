@@ -1,8 +1,18 @@
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Theme } from "../App";
-import { CheckCircle2, ArrowRight, User, Wrench } from "lucide-react";
+import {
+	CheckCircle2,
+	ArrowRight,
+	User,
+	Wrench,
+	ZoomIn,
+	ZoomOut,
+	X,
+	RotateCcw,
+} from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { HeroCarousel } from "./ui/heroCarrusel";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface ProcessStep {
 	title: string;
@@ -56,6 +66,280 @@ interface CaseStudyPageProps {
 	data: any[];
 }
 
+interface ArtifactModalProps {
+	artifact: ProcessArtifact;
+	theme: Theme;
+	onClose: () => void;
+	prefersReducedMotion: boolean;
+	accentColor: string;
+}
+
+function ArtifactModal({
+	artifact,
+	theme,
+	onClose,
+	prefersReducedMotion,
+	accentColor,
+}: ArtifactModalProps) {
+	const [zoom, setZoom] = useState(1);
+	const [pan, setPan] = useState({ x: 0, y: 0 });
+	const dragState = useRef<{
+		dragging: boolean;
+		startX: number;
+		startY: number;
+		originX: number;
+		originY: number;
+	}>({
+		dragging: false,
+		startX: 0,
+		startY: 0,
+		originX: 0,
+		originY: 0,
+	});
+	const hasDragged = useRef(false);
+
+	const MIN_ZOOM = 0.5;
+	const MAX_ZOOM = 4;
+	const ZOOM_STEP = 0.25;
+
+	const zoomIn = useCallback(
+		() => setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM)),
+		[],
+	);
+	const zoomOut = useCallback(
+		() => setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM)),
+		[],
+	);
+	const resetView = useCallback(() => {
+		setZoom(1);
+		setPan({ x: 0, y: 0 });
+	}, []);
+
+	// Reset pan when zoom returns to 1
+	useEffect(() => {
+		if (zoom === 1) setPan({ x: 0, y: 0 });
+	}, [zoom]);
+
+	useEffect(() => {
+		const handleKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") onClose();
+			if (e.key === "+" || e.key === "=") zoomIn();
+			if (e.key === "-") zoomOut();
+			if (e.key === "0") resetView();
+		};
+		window.addEventListener("keydown", handleKey);
+		document.body.style.overflow = "hidden";
+		return () => {
+			window.removeEventListener("keydown", handleKey);
+			document.body.style.overflow = "";
+		};
+	}, [onClose, zoomIn, zoomOut, resetView]);
+
+	const handleWheel = useCallback((e: React.WheelEvent) => {
+		e.preventDefault();
+		setZoom((z) =>
+			e.deltaY < 0
+				? Math.min(z + ZOOM_STEP, MAX_ZOOM)
+				: Math.max(z - ZOOM_STEP, MIN_ZOOM),
+		);
+	}, []);
+
+	// Pointer drag handlers
+	const onPointerDown = useCallback(
+		(e: React.PointerEvent) => {
+			if (zoom <= 1) return;
+			e.currentTarget.setPointerCapture(e.pointerId);
+			dragState.current = {
+				dragging: true,
+				startX: e.clientX,
+				startY: e.clientY,
+				originX: pan.x,
+				originY: pan.y,
+			};
+			hasDragged.current = false;
+		},
+		[zoom, pan],
+	);
+
+	const onPointerMove = useCallback((e: React.PointerEvent) => {
+		if (!dragState.current.dragging) return;
+		const dx = e.clientX - dragState.current.startX;
+		const dy = e.clientY - dragState.current.startY;
+		if (Math.abs(dx) > 3 || Math.abs(dy) > 3) hasDragged.current = true;
+		setPan({
+			x: dragState.current.originX + dx,
+			y: dragState.current.originY + dy,
+		});
+	}, []);
+
+	const onPointerUp = useCallback((e: React.PointerEvent) => {
+		dragState.current.dragging = false;
+	}, []);
+
+	const onImageClick = useCallback(
+		(e: React.MouseEvent) => {
+			e.stopPropagation();
+			if (hasDragged.current) {
+				hasDragged.current = false;
+				return;
+			}
+			if (zoom < MAX_ZOOM) zoomIn();
+			else resetView();
+		},
+		[zoom, zoomIn, resetView],
+	);
+
+	const onBackdropClick = useCallback(() => {
+		if (!hasDragged.current) onClose();
+	}, [onClose]);
+
+	const isDragging = zoom > 1;
+	const cursor = isDragging
+		? dragState.current.dragging
+			? "grabbing"
+			: "grab"
+		: zoom >= MAX_ZOOM
+			? "zoom-out"
+			: "zoom-in";
+
+	return (
+		<AnimatePresence>
+			<motion.div
+				className="fixed inset-0 z-50 flex flex-col"
+				style={{ backgroundColor: "rgba(0,0,0,0.85)" }}
+				initial={{ opacity: prefersReducedMotion ? 1 : 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}
+				transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+				onClick={onBackdropClick}
+			>
+				{/* Toolbar */}
+				<div
+					className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+					style={{
+						borderBottom: "1px solid rgba(255,255,255,0.1)",
+						backgroundColor: "rgba(0,0,0,0.6)",
+					}}
+					onClick={(e) => e.stopPropagation()}
+				>
+					<p className="text-sm text-neutral-400 truncate max-w-xs lg:max-w-lg">
+						{artifact.caption}
+					</p>
+
+					<div className="flex items-center gap-2 flex-shrink-0 ml-4">
+						<button
+							onClick={zoomOut}
+							disabled={zoom <= MIN_ZOOM}
+							className="p-2 rounded-lg transition-colors disabled:opacity-30 hover:bg-white/10 text-neutral-300"
+							aria-label="Zoom out"
+							title="Zoom out (−)"
+						>
+							<ZoomOut className="w-4 h-4" />
+						</button>
+
+						<button
+							onClick={resetView}
+							className="px-3 py-1.5 rounded-lg text-xs font-mono transition-colors hover:bg-white/10 text-neutral-300 min-w-[3.5rem] text-center"
+							aria-label="Reset view"
+							title="Reset view (0)"
+						>
+							{Math.round(zoom * 100)}%
+						</button>
+
+						<button
+							onClick={zoomIn}
+							disabled={zoom >= MAX_ZOOM}
+							className="p-2 rounded-lg transition-colors disabled:opacity-30 hover:bg-white/10 text-neutral-300"
+							aria-label="Zoom in"
+							title="Zoom in (+)"
+						>
+							<ZoomIn className="w-4 h-4" />
+						</button>
+
+						<div className="w-px h-5 bg-white/20 mx-1" />
+
+						<button
+							onClick={resetView}
+							className="p-2 rounded-lg transition-colors hover:bg-white/10 text-neutral-300"
+							aria-label="Reset view"
+							title="Reset (0)"
+						>
+							<RotateCcw className="w-4 h-4" />
+						</button>
+
+						<button
+							onClick={onClose}
+							className="p-2 rounded-lg transition-colors hover:bg-white/10 text-neutral-300"
+							aria-label="Close"
+							title="Close (Esc)"
+						>
+							<X className="w-4 h-4" />
+						</button>
+					</div>
+				</div>
+
+				{/* Image area */}
+				<div
+					className="flex-1 flex items-center justify-center overflow-hidden"
+					onWheel={handleWheel}
+					onClick={onBackdropClick}
+					style={{ cursor }}
+				>
+					<motion.img
+						src={artifact.image}
+						alt={artifact.caption}
+						onClick={onImageClick}
+						onPointerDown={onPointerDown}
+						onPointerMove={onPointerMove}
+						onPointerUp={onPointerUp}
+						onPointerCancel={onPointerUp}
+						animate={{
+							scale: zoom,
+							x: pan.x,
+							y: pan.y,
+						}}
+						transition={
+							dragState.current.dragging || prefersReducedMotion
+								? { duration: 0 }
+								: { type: "spring", stiffness: 300, damping: 30 }
+						}
+						style={{
+							maxWidth: "90vw",
+							maxHeight: "80vh",
+							objectFit: "contain",
+							transformOrigin: "center center",
+							cursor,
+							userSelect: "none",
+							touchAction: "none",
+						}}
+						draggable={false}
+					/>
+				</div>
+
+				{/* Keyboard hint */}
+				<div
+					className="flex items-center justify-center gap-4 py-2 flex-shrink-0"
+					style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+					onClick={(e) => e.stopPropagation()}
+				>
+					{[
+						{ keys: "+ / −", label: "zoom" },
+						{ keys: "scroll", label: "zoom" },
+						{ keys: "drag", label: "pan" },
+						{ keys: "0", label: "reset" },
+						{ keys: "Esc", label: "close" },
+					].map(({ keys, label }) => (
+						<span key={keys} className="text-xs text-neutral-600">
+							<kbd className="font-mono text-neutral-500">{keys}</kbd>{" "}
+							<span>{label}</span>
+						</span>
+					))}
+				</div>
+			</motion.div>
+		</AnimatePresence>
+	);
+}
+
 export default function CaseStudyPage({
 	caseStudyId,
 	theme,
@@ -66,6 +350,9 @@ export default function CaseStudyPage({
 }: CaseStudyPageProps) {
 	const caseStudy = data.find((cs: any) => cs.id === caseStudyId);
 	const details: CaseStudyDetails = caseStudy?.details;
+	const [activeArtifact, setActiveArtifact] = useState<ProcessArtifact | null>(
+		null,
+	);
 
 	if (!caseStudy || !details) return null;
 
@@ -73,6 +360,16 @@ export default function CaseStudyPage({
 
 	return (
 		<div className="pt-16">
+			{activeArtifact && (
+				<ArtifactModal
+					artifact={activeArtifact}
+					theme={theme}
+					onClose={() => setActiveArtifact(null)}
+					prefersReducedMotion={prefersReducedMotion}
+					accentColor={accentColor}
+				/>
+			)}
+
 			<div className="h-10"></div>
 
 			{/* Hero */}
@@ -345,20 +642,38 @@ export default function CaseStudyPage({
 									viewport={{ once: true }}
 									transition={{ delay: prefersReducedMotion ? 0 : 0.1 }}
 								>
-									<div
-										className={`rounded-2xl overflow-hidden border mb-4 ${
+									<button
+										onClick={() => setActiveArtifact(artifact)}
+										className={`w-full text-left group rounded-2xl overflow-hidden border mb-4 relative transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ${
 											theme === "dark"
-												? "border-neutral-800"
-												: "border-neutral-200"
+												? "border-neutral-800 hover:border-neutral-600"
+												: "border-neutral-200 hover:border-neutral-400"
 										}`}
+										aria-label={`Zoom in: ${artifact.caption}`}
 									>
 										<img
 											src={artifact.image}
 											alt={artifact.caption}
-											className="w-full object-contain"
+											className="w-full object-contain transition-transform duration-300 group-hover:scale-[1.01]"
 											style={{ maxHeight: "600px" }}
+											draggable={false}
 										/>
-									</div>
+										{/* Zoom hint overlay */}
+										<div
+											className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+											style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+										>
+											<div
+												className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm"
+												style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+											>
+												<ZoomIn className="w-4 h-4 text-white" />
+												<span className="text-white text-sm font-medium">
+													Click to zoom
+												</span>
+											</div>
+										</div>
+									</button>
 									<p
 										className={`mb-12 text-sm text-center ${
 											theme === "dark" ? "text-neutral-500" : "text-neutral-500"
